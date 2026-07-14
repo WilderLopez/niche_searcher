@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 
 from models.model import GpUrlBase, getSession
 
@@ -39,13 +39,16 @@ class GpUrlBaseModel:
     @staticmethod
     def getBatchToScan(limit: int):
         """
-        Devuelve las próximas `limit` URLs a evaluar (las que hace más tiempo
-        que no se escanean) y marca su last_scan_date para no repetirlas.
+        Devuelve las próximas `limit` URLs a evaluar y marca su last_scan_date
+        para no repetirlas. Prioriza las que hace más tiempo que no se escanean
+        y, a igualdad, las descubiertas más recientemente. Así los nuevos
+        hallazgos de 'discover' (candidatos a nicho) se evalúan antes que el
+        fondo histórico ya rancio.
         """
         session = getSession()
         rows = (
             session.query(GpUrlBase)
-            .order_by(asc(GpUrlBase.last_scan_date))
+            .order_by(asc(GpUrlBase.last_scan_date), desc(GpUrlBase.register_date))
             .limit(limit)
             .all()
         )
