@@ -66,6 +66,44 @@ Edita `config/app_config.py`:
 - Las apps que ya no existen en Play se eliminan automáticamente del pool.
 - Los resultados se guardan en la tabla `niche` de `databases/g_scraper.db`.
 
+## App Store (iOS)
+
+Además del buscador de Google Play, la herramienta incluye un buscador de nichos
+para el **App Store**, pensado para desarrolladores iOS.
+
+Apple **no publica el número de descargas** en público, así que se usa el **número
+de valoraciones** (`userRatingCount`) y su **velocidad** (valoraciones/día) como
+proxy de tracción — que es justo lo que hace la capa gratuita de las herramientas
+ASO profesionales. Los datos salen de fuentes oficiales de Apple: **iTunes Search
+API**, **iTunes Lookup API** (por lotes) y los **RSS Top Charts** por categoría.
+
+```bash
+# Descubrir candidatas iOS (por palabras clave y/o por top charts)
+python3 main.py ios-discover "ai video" "language learning"
+python3 main.py ios-charts
+
+# Evaluar y detectar nichos
+python3 main.py ios-evaluate --limit 500
+
+# Ver estado / top de nichos
+python3 main.py ios-stats
+
+# Generar un dashboard visual (HTML autónomo, se abre con doble clic en el Mac)
+python3 main.py ios-report --out report.html
+```
+
+El criterio se ajusta en `config/appstore_config.py` (`MIN_RATINGS`,
+`MAX_AGE_DAYS`, `COUNTRY`, `GENRES`). El **dashboard** (`report.html`) es un único
+archivo sin dependencias: KPIs, un panel de en qué categorías se concentran los
+nichos y una tabla reordenable con el *momentum* de cada app.
+
+### Qué usan las herramientas pro (y qué no puedes replicar gratis)
+
+- **Metadata, ratings, categorías, charts** → APIs oficiales gratuitas (lo que usa esta herramienta).
+- **Volumen real de keywords** → *Search Popularity* de **Apple Search Ads** (requiere cuenta de ASA). Es la única fuente legítima de demanda de búsqueda en iOS.
+- **Rankings por keyword** → scraping de la AMP API interna (`amp-api.apps.apple.com`, con token rotatorio).
+- **Estimaciones de descargas/ingresos** → modelos propietarios + datos de panel/SDK. No hay dato público de descargas en iOS.
+
 ## Estructura
 
 ```
