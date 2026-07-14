@@ -1,76 +1,73 @@
 import datetime
 
-from models.model import GpUrlBase, getSession
 from sqlalchemy import asc
+
+from models.model import GpUrlBase, getSession
+
+
+def _now_millis():
+    return round(datetime.datetime.now().timestamp() * 1000)
 
 
 class GpUrlBaseModel:
 
     @staticmethod
     def insertAppLinks(links: list):
+        """Inserta URLs de apps que aún no estén en la BD. Devuelve las nuevas."""
+        session = getSession()
+        inserted = []
 
-        sendGpUrl = []
+        # Cargamos las existentes de un tirón para no lanzar una query por link.
+        existing = {u for (u,) in session.query(GpUrlBase.url).all()}
 
-        for i in links:
-            temp = None
-            try:
-                temp = getSession().query(GpUrlBase).where(GpUrlBase.url == i).one()
-            except:
-                pass
+        for url in links:
+            if url in existing:
+                continue
+            temp = GpUrlBase(
+                url=url,
+                register_date=_now_millis(),
+                last_view_date=0,
+                last_scan_date=0,
+            )
+            session.add(temp)
+            inserted.append(temp)
+            existing.add(url)
 
-            if temp is None:
-                temp = GpUrlBase()
-                temp.url = i
-                temp.register_date = round(datetime.datetime.now().timestamp() * 1000)
-                temp.last_view_date = 0
-                temp.last_scan_date = 0
-                getSession().add(temp)
-                sendGpUrl.append(temp)
-
-        #Todo, revisar si esto se puede meter dentro del cloque del if.
-        getSession().commit()
-
-        return sendGpUrl
-
-    @staticmethod
-    def getNextUrlToSearch():
-        try:
-            temp = getSession().query(GpUrlBase).order_by(asc(GpUrlBase.last_view_date)).limit(1).one()
-            print("Vamos por el: " + str(temp.id))
-            temp.last_view_date = round(datetime.datetime.now().timestamp() * 1000)
-            getSession().add(temp)
-            getSession().commit()
-            return temp.url
-        except Exception as e:
-            print(e)
-            return None
+        session.commit()
+        return inserted
 
     @staticmethod
-    def getNextUrlToScan():
-        try:
-            temp = getSession().query(GpUrlBase).order_by(asc(GpUrlBase.last_scan_date)).limit(1).one()
-            print("Vamos por el: " + str(temp.id))
-            temp.last_scan_date = round(datetime.datetime.now().timestamp() * 1000)
-            getSession().add(temp)
-            getSession().commit()
-            return temp.url
-        except Exception as e:
-            print(e)
-            return None
-
-    @staticmethod
-    def getGpUrlBase(id):
-        try:
-            temp = getSession().query(GpUrlBase).get(id)
-            return temp
-        except:
-            return None
+    def getBatchToScan(limit: int):
+        """
+        Devuelve las próximas `limit` URLs a evaluar (las que hace más tiempo
+        que no se escanean) y marca su last_scan_date para no repetirlas.
+        """
+        session = getSession()
+        rows = (
+            session.query(GpUrlBase)
+            .order_by(asc(GpUrlBase.last_scan_date))
+            .limit(limit)
+            .all()
+        )
+        now = _now_millis()
+        urls = []
+        for row in rows:
+            row.last_scan_date = now
+            urls.append(row.url)
+        session.commit()
+        return urls
 
     @staticmethod
     def delete(appUrl: str):
+        session = getSession()
         try:
-            getSession().query(GpUrlBase).where(GpUrlBase.url == appUrl).delete()
-            getSession().commit()
+            session.query(GpUrlBase).where(GpUrlBase.url == appUrl).delete()
+            session.commit()
             return True
-        except Exception as e:
-            return None
+        except Exception:
+            session.rollback()
+            return False
+
+    @staticmethod
+    def count():
+        return getSession().query(GpUrlBase).count()

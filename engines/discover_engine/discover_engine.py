@@ -1,199 +1,55 @@
-from services.selenium_services import SeleniumServices
-from services.google_play_services import GooglePlayServices
+"""
+Motor de descubrimiento.
+
+Busca apps por palabras clave en Google Play y añade las nuevas al pool de
+candidatas (gp_url_base) para que 'evaluate' las analice después.
+
+Las palabras clave se leen de config/seed_keywords.txt (una por línea) o se
+pasan directamente al construir el motor.
+"""
+
+import os
+
 from models.gp_url_base_model import GpUrlBaseModel
+from services.play_service import PlayService
+
+_SEEDS_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "config",
+    "seed_keywords.txt",
+)
 
 
 class DiscoverEngine:
-    locale = "es_ES"
 
-    categories = [
-        "TOOLS",
-        "LIFESTYLE",
-        "SPORTS",
-        "HEALTH_AND_FITNESS",
-        "SHOPPING",
-        "SOCIAL",
-        "COMMUNICATION",
-        "PRODUCTIVITY",
-        "VIDEO_PLAYERS",
-        "FINANCE",
-        "ENTERTAINMENT",
-        "MUSIC_AND_AUDIO",
-        "TRAVEL_AND_LOCAL",
-        "ANDROID_WEAR",
-        "WATCH_FACE",
-        "ART_AND_DESIGN",
-        "AUTO_AND_VEHICLES",
-        "BEAUTY",
-        "LIBRARIES_AND_DEMO",
-        "HOUSE_AND_HOME",
-        "DATING",
-        "FOOD_AND_DRINK",
-        "COMICS",
-        "EDUCATION",
-        "BUSINESS",
-        "EVENTS",
-        "PHOTOGRAPHY",
-        "GAME",
-        "BOOKS_AND_REFERENCE",
-        "MAPS_AND_NAVIGATION",
-        "MEDICAL",
-        "MUSIC_AND_AUDIO",
-        "FAMILY",
-        "NEWS_AND_MAGAZINES",
-        "PERSONALIZATION",
-        "HEALTH_AND_FITNESS",
-        "PARENTING",
-        "WEATHER",
-    ]
+    def __init__(self, keywords: list = None, per_keyword: int = 30):
+        self.keywords = keywords if keywords else self._load_seed_keywords()
+        self.per_keyword = per_keyword
 
-    def __init__(self, locale: str):
-        self.locale = locale
-        self.langs = [
-            "&hl=en&gl=US",
-            "&hl=es&gl=ES",
-            "&hl=es&gl=US",
-            "&hl=es&gl=419",
-            "&hl=af",
-            "&hl=de&gl=DE",
-            "&hl=am",
-            "&hl=hy&gl=AM",
-            "&hl=bn&gl=BD",
-            "&hl=be",
-            "&hl=my&gl=MY",
-            "&hl=bg",
-            "&hl=kn&gl=IN",
-            "&hl=ca",
-            "&hl=cs&gl=CZ",
-            "&hl=zh&gl=HK",
-            "&hl=zh&gl=CN",
-            "&hl=zh&gl=TW",
-            "&hl=si&gl=LK",
-            "&hl=ko&gl=KR",
-            "&hl=hr",
-            "&hl=da&gl=DK",
-            "&hl=sk",
-            "&hl=sl",
-            "&hl=sl",
-            "&hl=et",
-            "&hl=eu&gl=ES",
-            "&hl=fi&gl=FL",
-            "&hl=fr&gl=CA",
-            "&hl=fr&gl=FR",
-            "&hl=gl&gl=ES",
-            "&hl=ka&gl=GE",
-            "&hl=el&gl=GR",
-            "&hl=iw&gl=IL",
-            "&hl=hi&gl=IN",
-            "&hl=hu&gl=HU",
-            "&hl=en&gl=IN",
-            "&hl=en&gl=SG",
-            "&hl=en&gl=ZA",
-            "&hl=en&gl=AU",
-            "&hl=en&gl=CA",
-            "&hl=en&gl=GB",
-            "&hl=is&gl=IS",
-            "&hl=it&gl=IT",
-            "&hl=ja&gl=JP",
-            "&hl=km&gl=KH",
-            "&hl=kk",
-            "&hl=ky&gl=KG",
-            "&hl=lo&gl=LA",
-            "&hl=lv",
-            "&hl=lt",
-            "&hl=mk&gl=MK",
-            "&hl=ms",
-            "&hl=ms&gl=MY",
-            "&hl=ml&gl=IN",
-            "&hl=mn&gl=MN",
-            "&hl=nl&gl=NL",
-            "&hl=ne&gl=NP",
-            "&hl=no&gl=NO",
-            "&hl=fa&gl=IR",
-            "&hl=fa&gl=AF",
-            "&hl=fa&gl=AE",
-            "&hl=fa",
-            "&hl=pl&gl=PL",
-            "&hl=pt&gl=BR",
-            "&hl=pt&gl=PT",
-            "&hl=pa",
-            "&hl=ro",
-            "&hl=sr",
-            "&hl=sw",
-            "&hl=sv&gl=SE",
-            "&hl=th",
-            "&hl=ta&gl=IN",
-            "&hl=te&gl=IN",
-            "&hl=tr&gl=TR",
-            "&hl=vi",
-            "&hl=zu",
-            "&hl=ar",
-        ]
+    @staticmethod
+    def _load_seed_keywords():
+        if not os.path.exists(_SEEDS_FILE):
+            return []
+        with open(_SEEDS_FILE, encoding="utf-8") as f:
+            return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
-        self.lang = self.langs[0]
+    def run(self):
+        if not self.keywords:
+            print(
+                "No hay palabras clave. Añade algunas a config/seed_keywords.txt "
+                "o pásalas como argumento."
+            )
+            return {"added": 0}
 
-        self.init()
+        added_total = 0
+        print(f"Buscando por {len(self.keywords)} palabras clave...\n")
 
-    def init(self):
+        for keyword in self.keywords:
+            app_ids = PlayService.search_app_ids(keyword, limit=self.per_keyword)
+            urls = [PlayService.app_id_to_url(a) for a in app_ids]
+            new_rows = GpUrlBaseModel.insertAppLinks(urls)
+            added_total += len(new_rows)
+            print(f"  '{keyword}': {len(app_ids)} resultados, {len(new_rows)} nuevas")
 
-        selServices = SeleniumServices(useEdge=False)
-
-        """
-        links = selServices.getHomeUrls("https://play.google.com/store/apps?hl=es&gl=ES")
-        links = GooglePlayServices.clearLinksForAppsOnly(links)
-        updatedLinks = GpUrlBaseModel.insertAppLinks(links)
-        """
-
-        index = 1
-
-        while True:
-            try:
-
-                if index % 100 != 0:
-
-                    newLink = GpUrlBaseModel.getNextUrlToSearch()
-                    if newLink is None:
-                        break
-
-                    links = selServices.getAppPageUrls(newLink + self.lang)
-
-                    if links is None:
-                        continue
-
-                    if len(links) == 1 and "https://play.google.com/store" in links[0]:
-                        links = selServices.getAppPageUrls(newLink)
-                        if len(links) == 1 and "https://play.google.com/store" in links[0]:
-                            print("Deleting link: " + newLink)
-                            GpUrlBaseModel.delete(newLink)
-                            continue
-
-                    links = GooglePlayServices.clearLinksForAppsOnly(links)
-                    GpUrlBaseModel.insertAppLinks(links)
-
-                else:
-
-                    for cat in self.categories:
-                        links = selServices.getAppPageUrls(
-                            "https://play.google.com/store/apps/category/" + cat + "?" + self.lang)
-                        links = GooglePlayServices.clearLinksForAppsOnly(links)
-                        GpUrlBaseModel.insertAppLinks(links)
-
-                    if self.lang == self.langs[len(self.langs) - 1]:
-                        self.lang = self.langs[0]
-                    else:
-                        for i in range(len(self.langs)):
-                            if self.langs[i] == self.lang and i < len(self.langs) - 2:
-                                self.lang = self.langs[i + 1]
-                                break
-
-            except Exception as e:
-                # selServices.getDriver().close()
-                break
-
-            index += 1
-
-        print("Ha terminado de buscar urls")
-        print("Iniciamos de nuevo en 1 minutos")
-        selServices.closeWindow()
-        # time.sleep(1)
-        self.init()
+        print(f"\nHecho. Nuevas candidatas añadidas al pool: {added_total}")
+        return {"added": added_total}

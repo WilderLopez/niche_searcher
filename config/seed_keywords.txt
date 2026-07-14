@@ -1,0 +1,15 @@
+# Palabras clave para el descubrimiento (una por línea).
+# Añade/quita las que quieras según los nichos que te interesen.
+# Las líneas que empiezan por # se ignoran.
+habit tracker
+budget planner
+ai photo editor
+pdf scanner
+language learning
+meditation
+workout planner
+recipe manager
+qr scanner
+video downloader
+wallpaper
+notes app
