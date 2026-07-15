@@ -79,6 +79,11 @@ def cmd_ios_report(out="report.html"):
     AppStoreReport.generate(out)
 
 
+def cmd_ios_reviews(app_id, country=None, pages=10):
+    from services.review_miner import ReviewMiner
+    ReviewMiner.print_report(app_id, country=country or AppStoreConfig.COUNTRY, pages=pages)
+
+
 def cmd_ios_stats():
     print("Estado App Store (iOS)")
     print("-" * 32)
@@ -166,6 +171,11 @@ def build_parser():
     p_ir = sub.add_parser("ios-report", help="Genera un dashboard HTML de los nichos iOS")
     p_ir.add_argument("--out", default="report.html")
 
+    p_irv = sub.add_parser("ios-reviews", help="Mina las reseñas de una app (temas de queja)")
+    p_irv.add_argument("app_id", help="ID de la app en el App Store (p.ej. 6752929120)")
+    p_irv.add_argument("--country", default=None)
+    p_irv.add_argument("--pages", type=int, default=10)
+
     sub.add_parser("ios-stats", help="Muestra el estado del buscador iOS")
 
     return parser
@@ -194,6 +204,8 @@ def main():
         cmd_ios_evaluate(limit=args.limit, country=args.country, delay=args.delay)
     elif args.command == "ios-report":
         cmd_ios_report(out=args.out)
+    elif args.command == "ios-reviews":
+        cmd_ios_reviews(args.app_id, country=args.country, pages=args.pages)
     elif args.command == "ios-stats":
         cmd_ios_stats()
     else:
