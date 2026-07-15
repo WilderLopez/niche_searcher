@@ -92,10 +92,30 @@ python3 main.py ios-stats
 python3 main.py ios-report --out report.html
 ```
 
-El criterio se ajusta en `config/appstore_config.py` (`MIN_RATINGS`,
+El criterio base se ajusta en `config/appstore_config.py` (`MIN_RATINGS`,
 `MAX_AGE_DAYS`, `COUNTRY`, `GENRES`). El **dashboard** (`report.html`) es un único
 archivo sin dependencias: KPIs, un panel de en qué categorías se concentran los
-nichos y una tabla reordenable con el *momentum* de cada app.
+objetivos y una tabla reordenable.
+
+### Clone score — apps para clonar en solitario
+
+Cada nicho recibe un **clone score (0-100)** pensado para un dev iOS que quiere
+clonar apps rentables y sencillas **sin depender de anuncios**:
+
+```
+clone_score = oportunidad × viabilidad
+  oportunidad = 0,55·demanda   + 0,45·monetización   (¿hay mercado que paga?)
+  viabilidad  = construibilidad × competibilidad      (¿puedo hacerla y competir?)
+```
+
+- **Demanda**: valoraciones/día (proxy de tracción).
+- **Monetización**: de pago o con suscripción (penaliza lo que solo vive de ads).
+- **Construibilidad**: categoría simple, app ligera, sin librería de contenido propia.
+- **Competibilidad**: indie (no gigante), sin efecto red, mercado no saturado.
+
+Todas las perillas —pesos de categoría, listas de gigantes, palabras clave de
+contenido/monetización, umbrales— están en **`config/clone_profile.py`** para que
+lo afines a lo que tú sabes/quieres construir.
 
 ### Qué usan las herramientas pro (y qué no puedes replicar gratis)
 

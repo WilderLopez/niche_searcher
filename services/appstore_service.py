@@ -64,6 +64,11 @@ class AppStoreService:
         ratings_per_day = (rating_count / age_days) if age_days else 0.0
         price = a.get("price") or 0
 
+        try:
+            file_size_mb = round(int(a.get("fileSizeBytes", 0)) / 1_000_000)
+        except (TypeError, ValueError):
+            file_size_mb = 0
+
         return {
             "app_id": str(a.get("trackId")),
             "bundle_id": a.get("bundleId"),
@@ -83,6 +88,11 @@ class AppStoreService:
             "updated": a.get("currentVersionReleaseDate"),
             "content_rating": a.get("contentAdvisoryRating"),
             "ratings_per_day": round(ratings_per_day, 2),
+            # señales de complejidad para el "clone score"
+            "description": a.get("description") or "",
+            "file_size_mb": file_size_mb,
+            "screenshot_count": len(a.get("screenshotUrls") or []),
+            "language_count": len(a.get("languageCodesISO2A") or []),
         }
 
     @staticmethod

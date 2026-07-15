@@ -79,6 +79,16 @@ class AppstoreNiche(Base):
     updated = Column(String)
     content_rating = Column(String)
     ratings_per_day = Column(Float)
+    file_size_mb = Column(Integer)
+    screenshot_count = Column(Integer)
+    language_count = Column(Integer)
+    # clone score y sus componentes
+    clone_score = Column(Integer)
+    s_demand = Column(Integer)
+    s_monetization = Column(Integer)
+    s_buildability = Column(Integer)
+    s_competibility = Column(Integer)
+    flags = Column(String)
     evaluated_at = Column(BigInteger)
 
 

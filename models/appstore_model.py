@@ -65,7 +65,10 @@ class AppstoreNicheModel:
         "bundle_id", "url", "title", "developer", "genre", "genre_id",
         "avg_rating", "rating_count", "price", "currency", "free",
         "released", "released_millis", "age_days", "updated",
-        "content_rating", "ratings_per_day",
+        "content_rating", "ratings_per_day", "file_size_mb",
+        "screenshot_count", "language_count",
+        "clone_score", "s_demand", "s_monetization", "s_buildability",
+        "s_competibility", "flags",
     ]
 
     @staticmethod
@@ -95,7 +98,7 @@ class AppstoreNicheModel:
     def top(limit: int = 50):
         return (
             getSession().query(AppstoreNiche)
-            .order_by(desc(AppstoreNiche.ratings_per_day))
+            .order_by(desc(AppstoreNiche.clone_score), desc(AppstoreNiche.ratings_per_day))
             .limit(limit)
             .all()
         )
@@ -104,6 +107,6 @@ class AppstoreNicheModel:
     def all():
         return (
             getSession().query(AppstoreNiche)
-            .order_by(desc(AppstoreNiche.ratings_per_day))
+            .order_by(desc(AppstoreNiche.clone_score), desc(AppstoreNiche.ratings_per_day))
             .all()
         )

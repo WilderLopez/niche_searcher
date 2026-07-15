@@ -11,6 +11,7 @@ import time
 from config.appstore_config import AppStoreConfig
 from models.appstore_model import AppstoreCandidateModel, AppstoreNicheModel
 from services.appstore_service import AppStoreService
+from services.clone_score import score_app
 
 
 class AppStoreEvaluateEngine:
@@ -37,17 +38,20 @@ class AppStoreEvaluateEngine:
 
             for data in data_list:
                 if AppStoreConfig.is_niche(data):
+                    score = score_app(data)
+                    data.update(score)
+                    data["flags"] = " · ".join(score["flags"])
                     AppstoreNicheModel.upsert(data)
                     niches += 1
                     print(
-                        f"  ✓ NICHO  {(data['title'] or '')[:38]:38}  "
-                        f"{data['rating_count']:>9,} valoraciones  "
-                        f"{data['age_days']:>4}d  "
-                        f"{data['ratings_per_day']:>8,.0f}/día  [{data['genre']}]"
+                        f"  [{data['clone_score']:>3}]  {(data['title'] or '')[:32]:32}  "
+                        f"{data['rating_count']:>8,} val  {data['age_days']:>4}d  "
+                        f"[{(data['genre'] or '')[:15]:15}]  {data['flags']}"
                     )
 
             if self.delay:
                 time.sleep(self.delay)
 
         print(f"\nHecho. Evaluadas: {scanned} | Nichos: {niches}")
+        print("Visualiza el ranking con: python3 main.py ios-report")
         return {"scanned": scanned, "niches": niches}
