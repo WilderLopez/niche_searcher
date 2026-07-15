@@ -67,8 +67,8 @@ class AppstoreNicheModel:
         "released", "released_millis", "age_days", "updated",
         "content_rating", "ratings_per_day", "file_size_mb",
         "screenshot_count", "language_count",
-        "clone_score", "s_demand", "s_monetization", "s_buildability",
-        "s_competibility", "flags",
+        "clone_score", "s_demand", "s_monetization", "s_appeal",
+        "s_buildability", "s_design", "s_competibility", "flags",
     ]
 
     @staticmethod

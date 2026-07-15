@@ -126,9 +126,9 @@ td.right{text-align:right}
 .sc-top .scoreval{color:var(--good)} .sc-good .scoreval{color:var(--accent)}
 .sc-mid .scoreval{color:var(--warn)} .sc-low .scoreval{color:var(--bad)}
 .scoremax{font-size:12px; color:var(--faint)}
-.subbars{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:8px; max-width:190px}
+.subbars{display:grid; grid-template-columns:repeat(3,1fr); gap:6px 8px; margin-top:8px; max-width:210px}
 .sb{display:flex; flex-direction:column; gap:3px}
-.sb .sbl{font-size:9px; color:var(--faint); letter-spacing:.03em}
+.sb .sbl{font-size:9px; color:var(--faint); letter-spacing:.02em}
 .sb .sbt{height:6px; border-radius:3px; background:var(--border); overflow:hidden}
 .sb .sbf{height:100%; background:var(--accent); border-radius:3px; min-width:2px}
 
@@ -221,7 +221,8 @@ class AppStoreReport:
             subbars = (
                 '<div class="subbars">'
                 + _subbar("DEM", n.s_demand) + _subbar("MON", n.s_monetization)
-                + _subbar("BUILD", n.s_buildability) + _subbar("COMP", n.s_competibility)
+                + _subbar("APEL", n.s_appeal) + _subbar("BUILD", n.s_buildability)
+                + _subbar("DISE", n.s_design) + _subbar("COMP", n.s_competibility)
                 + '</div>'
             )
             rows.append(
@@ -273,7 +274,8 @@ class AppStoreReport:
       <p class="eyebrow">App Store · Clone Radar</p>
       <h1>Apps para clonar y monetizar</h1>
       <p class="lede">Rankeadas por <b>clone score</b>: apps con demanda, que se pagan
-      (sin depender de anuncios), sencillas de construir en solitario y con hueco para competir.</p>
+      (sin anuncios), gustan a la gente, sencillas de construir <b>sin diseño complejo</b>
+      y con hueco para competir en solitario.</p>
     </div>
     <div class="meta">
       Storefront <b>{AppStoreConfig.COUNTRY.upper()}</b> · <b>{now}</b><br>
@@ -306,10 +308,12 @@ class AppStoreReport:
 
   <footer>
     <b>Clone score = oportunidad × viabilidad.</b>
-    Oportunidad = 0,55·<b>DEM</b> (demanda: valoraciones/día) + 0,45·<b>MON</b> (monetización: de pago o suscripción).
-    Viabilidad = <b>BUILD</b> (construible en solitario: categoría simple, app ligera, sin librería de contenido)
-    × <b>COMP</b> (competible: indie, no gigante, mercado no saturado).<br>
-    Ajusta los pesos y las listas en <b>config/clone_profile.py</b>. Haz clic en las cabeceras para reordenar.
+    Oportunidad = 0,45·<b>DEM</b> (demanda: val./día) + 0,35·<b>MON</b> (monetización: pago/suscripción)
+    + 0,20·<b>APEL</b> (aprecio: valoración media).
+    Viabilidad = <b>BUILD</b> (construible: categoría simple, app ligera, sin contenido propio)
+    × <b>DISE</b> (diseño simple: UI estándar, sin arte/temas/wallpapers)
+    × <b>COMP</b> (competible: indie, no gigante, no saturado).<br>
+    Ajusta pesos y listas en <b>config/clone_profile.py</b>. Clic en las cabeceras para reordenar.
     Datos vía APIs públicas de Apple (iTunes + RSS). Herramienta personal — niche_searcher.
   </footer>
 </div>

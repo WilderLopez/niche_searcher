@@ -104,14 +104,20 @@ clonar apps rentables y sencillas **sin depender de anuncios**:
 
 ```
 clone_score = oportunidad × viabilidad
-  oportunidad = 0,55·demanda   + 0,45·monetización   (¿hay mercado que paga?)
-  viabilidad  = construibilidad × competibilidad      (¿puedo hacerla y competir?)
+  oportunidad = 0,45·demanda + 0,35·monetización + 0,20·aprecio
+  viabilidad  = construibilidad × diseño_simple × competibilidad
 ```
 
 - **Demanda**: valoraciones/día (proxy de tracción).
 - **Monetización**: de pago o con suscripción (penaliza lo que solo vive de ads).
+- **Aprecio**: valoración media (¿le gusta a la gente?).
 - **Construibilidad**: categoría simple, app ligera, sin librería de contenido propia.
+- **Diseño simple**: UI estándar (listas/formularios/cámara→resultado); penaliza apps
+  cuyo producto es el arte (wallpapers, temas, editores con lienzo) — pensado para
+  quien no es diseñador.
 - **Competibilidad**: indie (no gigante), sin efecto red, mercado no saturado.
+
+Las apps de UI estándar, fáciles y bien valoradas se marcan con **🛠 Ideal SwiftUI**.
 
 Todas las perillas —pesos de categoría, listas de gigantes, palabras clave de
 contenido/monetización, umbrales— están en **`config/clone_profile.py`** para que

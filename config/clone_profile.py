@@ -40,6 +40,48 @@ class CloneProfile:
     }
     DEFAULT_BUILDABILITY = 0.60
 
+    # --- Simplicidad de DISEÑO por categoría (1 = UI estándar, 0 = todo arte) ---
+    # Pensado para alguien que NO es diseñador: premia UI de listas/formularios/
+    # cámara->resultado y castiga apps cuyo valor es el arte propio.
+    CATEGORY_DESIGN_SIMPLICITY = {
+        "Utilities": 0.95,
+        "Productivity": 0.95,
+        "Reference": 0.90,
+        "Finance": 0.90,
+        "Medical": 0.90,
+        "Books": 0.90,
+        "Health & Fitness": 0.85,
+        "Education": 0.85,
+        "Business": 0.85,
+        "News": 0.85,
+        "Weather": 0.80,
+        "Food & Drink": 0.80,
+        "Travel": 0.75,
+        "Sports": 0.75,
+        "Lifestyle": 0.70,
+        "Music": 0.60,
+        "Navigation": 0.60,
+        "Entertainment": 0.55,
+        "Photo & Video": 0.55,
+        "Shopping": 0.50,
+        "Graphics & Design": 0.40,
+        "Social Networking": 0.40,
+        "Games": 0.25,
+    }
+    DEFAULT_DESIGN_SIMPLICITY = 0.70
+
+    # Apps cuyo producto ES el diseño/arte -> mucho trabajo de diseñador.
+    DESIGN_HEAVY_KEYWORDS = [
+        "wallpaper", "wallpapers", "live wallpaper", "theme", "themes",
+        "aesthetic", "sticker", "stickers", "collage", "icon pack",
+        "template", "templates", "animated background", "beautifully designed",
+        "stunning design", "gorgeous", "customize your home screen",
+    ]
+
+    # --- Aprecio: valoración media (¿le gusta a la gente?) ---
+    WELL_LIKED_RATING = 4.5
+    POORLY_RATED = 3.8
+
     # Categorías que dependen de efecto red / dos lados de mercado -> casi
     # imposibles de arrancar en solitario.
     NETWORK_EFFECT_GENRES = {"Social Networking", "Dating", "Shopping", "Business"}
